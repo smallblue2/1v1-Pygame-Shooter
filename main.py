@@ -14,7 +14,7 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 60
 TIMER = 0
 MAX_BULLETS = 4
-P_UP_SPAWN_RATE = 1000
+P_UP_SPAWN_RATE = 100
 P_UP_DURATION = 1
 FONT = pygame.font.Font('assets/Voyager Heavy.otf', 20)
 
@@ -27,6 +27,7 @@ spaceship1_image = pygame.image.load("assets/player1.png")
 spaceship2_image = pygame.image.load("assets/player2.png")
 bullet_image = pygame.image.load("assets/bullet.png")
 speed_up_image = pygame.image.load("assets/speed_powerup.png")
+health_up_image = pygame.image.load("assets/health_powerup.png")
 p1_bullet_sound = pygame.mixer.Sound("assets/ship1sound.wav")
 p2_bullet_sound = pygame.mixer.Sound("assets/ship2sound.wav")
 hit_sound = pygame.mixer.Sound("assets/hitsound.wav")
@@ -145,6 +146,8 @@ def draw_window(p1, p2, power_ups):
 	for p_up in power_ups:
 		if p_up.type == 1:
 			WIN.blit(speed_up_image, (p_up.x, p_up.y))
+		if p_up.type == 2:
+			WIN.blit(health_up_image, (p_up.x, p_up.y))
 	WIN.blit(p1_health_text, (32, 10))
 	WIN.blit(p2_health_text, (WIDTH - 32 - p1_health_text.get_width(), 10))
 	pygame.display.update()
@@ -177,7 +180,7 @@ def main():
 					p1.w_pressed = True
 				if event.key == pygame.K_s:
 					p1.s_pressed = True
-				if event.key == pygame.K_LCTRL:
+				if event.key == pygame.K_SPACE :
 					if len(p1.bullets) <= MAX_BULLETS:
 						p1b = BULLET(1, p1)
 						p1.bullets.append(p1b)
@@ -221,15 +224,16 @@ def main():
 		if chance == 0:
 			# Decides side to spawn at
 			side = random.randint(1,2)
+			type = random.randint(1,2)
 			if side == 1:
 				x = random.randint(0, (WIDTH // 2) - 15)
 				y = random.randint(0, HEIGHT - 15)
-				p_up = POWER_UP(x, y, 1, TIMER)
+				p_up = POWER_UP(x, y, type, TIMER)
 				power_ups.append(p_up)
 			else:
 				x = random.randint((WIDTH // 2) + 15, WIDTH)
 				y = random.randint(0, HEIGHT - 15)
-				p_up = POWER_UP(x, y, 1, TIMER)
+				p_up = POWER_UP(x, y, type, TIMER)
 				power_ups.append(p_up)
 
 		# Checkes players' health
@@ -292,48 +296,53 @@ def power_up_handler(p1, p2, power_ups):
 	
 	# Checking Power-up Collision for both players
 	for power_up in power_ups:
+		# Checks power-up's expiry
+		if power_up.expire < TIMER:
+			power_ups.remove(power_up)
+			del power_up
+			continue
+		# Checks collision with p1
 		if pygame.Rect.colliderect(power_up.rect, p1.rect):
-			# On collision, modifying stats depending on power-up
-			# Also extending initial expiry timer
+			# Modify's stats and appends power-up to player attribute
 			if power_up.type == 1:
 				p1.speed *= 1.5
 				power_up.reset_expiry(2)
-			p1.power_ups.append(power_up)
-			power_ups.remove(power_up)
-		if pygame.Rect.colliderect(power_up.rect, p2.rect):
-			# On collision, modifying stats depending on power-up
-			# Also extending initial expiry timer
+				p1.power_ups.append(power_up)
+				power_ups.remove(power_up)
+			if power_up.type == 2:
+				p1.health += 1
+				power_ups.remove(power_up)
+				del power_up
+		# Checks collision with p2
+		elif pygame.Rect.colliderect(power_up.rect, p2.rect):
+			# Modify's stats and appends power-up to player attribute
 			if power_up.type == 1:
 				p2.speed *= 1.5
 				power_up.reset_expiry(2)
-			p2.power_ups.append(power_up)
-			power_ups.remove(power_up)
-				# Checking expiry on power-ups
-		
-		# Checking expiry on power-ups
-		if TIMER > power_up.expire:
-			power_ups.remove(power_up)
-			print('EXPIRE')
-			del power_up
+				p2.power_ups.append(power_up)
+				power_ups.remove(power_up)
+			if power_up.type == 2:
+				p2.health += 1
+				power_ups.remove(power_up)
+				del power_up
 	
-	# Checking expiry timer for p1's power-ups
+	# Checks p1's power-up expiries
 	for power_up in p1.power_ups:
-		if TIMER > power_up.expire:
+		if power_up.expire < TIMER:
 			if power_up.type == 1:
 				p1.speed /= 1.5
-				p1.power_ups.remove(power_up)
-				print('EXPIRE')
-				del power_up
+			p1.power_ups.remove(power_up)
+			del power_up
 	
-	# Checking expiry timer for p2's power-ups
+	# Checks p2's power-up expiries
 	for power_up in p2.power_ups:
-		if TIMER > power_up.expire:
+		if power_up.expire < TIMER:
 			if power_up.type == 1:
 				p2.speed /= 1.5
-				p2.power_ups.remove(power_up)
-				print('EXPIRE')
-				del power_up
-
+			p2.power_ups.remove(power_up)
+			del power_up
+			
+			
 
 # Game Over Function
 def gameover(winner):
