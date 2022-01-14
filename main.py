@@ -13,8 +13,8 @@ WIDTH, HEIGHT = 900, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 FPS = 60
 TIMER = 0
-MAX_BULLETS = 4
-P_UP_SPAWN_RATE = 100
+MAX_BULLETS = 5
+P_UP_SPAWN_RATE = 600
 P_UP_DURATION = 1
 FONT = pygame.font.Font('assets/Voyager Heavy.otf', 20)
 
@@ -44,6 +44,7 @@ class P1:
 		self.d_pressed = False
 		self.speed = 3
 		self.health = 5
+		self.max_bullets = MAX_BULLETS
 		self.bullets = []
 		self.power_ups = []
 
@@ -81,6 +82,7 @@ class P2:
 		self.right_pressed = False
 		self.speed = 3
 		self.health = 5
+		self.max_bullets = MAX_BULLETS
 		self.bullets = []
 		self.power_ups = []
 
@@ -181,7 +183,7 @@ def main():
 				if event.key == pygame.K_s:
 					p1.s_pressed = True
 				if event.key == pygame.K_SPACE :
-					if len(p1.bullets) <= MAX_BULLETS:
+					if len(p1.bullets) < p1.max_bullets:
 						p1b = BULLET(1, p1)
 						p1.bullets.append(p1b)
 				# Player 2 Key Checks
@@ -194,7 +196,7 @@ def main():
 				if event.key == pygame.K_DOWN:
 					p2.down_pressed = True
 				if event.key == pygame.K_RCTRL:
-					if len(p2.bullets) <= MAX_BULLETS:
+					if len(p2.bullets) < p2.max_bullets:
 						p2b = BULLET(2, p2)
 						p2.bullets.append(p2b)
 	
