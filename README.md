@@ -30,7 +30,7 @@ This was **developed on linux**, so migration to windows may provide some errors
 
 ## Mechanics
 Each player begins with 5 lives. \
-Your aim is to reduce the other player's lives to 0 to win. \
+Your aim is to reduce the other player's lives to 0 to win.
 
 You can get lives through powerups, and other abilities such as speed, which stack.
 
